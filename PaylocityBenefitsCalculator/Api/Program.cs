@@ -1,8 +1,15 @@
 using Microsoft.OpenApi.Models;
+using Api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Why automapper? That's the first mapper from top of my head.
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddSingleton<IDependentRepository, DependentRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
