@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
-using Api.Dtos.Dependent;
+using Api.Dtos.Paycheck;
 using Api.Dtos.Employee;
 using Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Api.Repositories;
+using Api.Calculator;
 
 namespace Api.Controllers;
 
@@ -13,13 +14,16 @@ namespace Api.Controllers;
 public class EmployeesController : ControllerBase
 {
     private readonly IEmployeeRepository employeeRepository;
+    private readonly IPaycheckCalculator paycheckCalculator;
     private readonly IMapper mapper;
 
     public EmployeesController(
         IEmployeeRepository employeeRepository,
+        IPaycheckCalculator paycheckCalculator,
         IMapper mapper)
     {
         this.employeeRepository = employeeRepository;
+        this.paycheckCalculator = paycheckCalculator;
         this.mapper = mapper;
     }
 
@@ -59,4 +63,26 @@ public class EmployeesController : ControllerBase
 
         return result;
     }
+
+    [SwaggerOperation(Summary = "Get paycheck for employee")]
+    [HttpGet("{employeeId}/paycheck/{year}/{paycheckNumber}")] //TODO: this path could be nicer
+    public async Task<ActionResult<ApiResponse<GetPaycheckDto>>> Get(int employeeId, int year, int paycheckNumber)
+    {
+        var employee = await employeeRepository.GetById(employeeId);
+        if (employee == null)
+        {
+            return NotFound();
+        }
+
+        //TODO: validate year and paycheckNumber
+        var paycheck = paycheckCalculator.GetPaycheck(employee, year, paycheckNumber);
+
+        var paycheckDto = mapper.Map<GetPaycheckDto>(paycheck);
+        return new ApiResponse<GetPaycheckDto>
+        {
+            Data = paycheckDto,
+            Success = true
+        };
+    }
+
 }

@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Api.Dtos.Dependent;
 using Api.Dtos.Employee;
+using Api.Dtos.Paycheck;
 using Api.Models;
 using Xunit;
 
@@ -105,6 +106,36 @@ public class EmployeeIntegrationTests : IntegrationTest
     {
         var response = await HttpClient.GetAsync($"/api/v1/employees/{int.MinValue}");
         await response.ShouldReturn(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    //task: make test pass
+    public async Task WhenAskedForPaycheck_ShouldReturnCorrectPaycheck()
+    {
+        var response = await HttpClient.GetAsync($"/api/v1/employees/1/paycheck/2025/4");
+
+        //TODO: not a good test, because the same calculaiton is re-implmented
+        var baseSalary = 75420.99m / 26;
+        var benefitCost = 12 * 1000m / 26;
+
+        var paycheck = new GetPaycheckDto
+        {
+            EmployeeId = 1,
+            Year = 2025,
+            PaychechNumber = 4,
+            BaseSalary = baseSalary,
+            SalaryToPay = baseSalary - benefitCost,
+            TotalBenefitCost = benefitCost,
+            BenefitCosts = new List<BenefitCostExplainDto>
+            {
+                new BenefitCostExplainDto
+                {
+                    Amount = benefitCost,
+                    Reason = "Employee's base cost"
+                }
+            }          
+        };
+        await response.ShouldReturn(HttpStatusCode.OK, paycheck);
     }
 }
 

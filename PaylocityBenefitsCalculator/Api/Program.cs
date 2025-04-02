@@ -1,15 +1,18 @@
 using Microsoft.OpenApi.Models;
 using Api.Repositories;
+using Api.Calculator;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-// Why automapper? That's the first mapper from top of my head.
+//why: automapper - That's the first mapper from top of my head.
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddSingleton<IDependentRepository, DependentRepository>();
+builder.Services.AddSingleton<IPaycheckCalculator, PaycheckCalculator>();
+builder.Services.AddSingleton<PaycheckConfiguration>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
